@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Link, NavLink } from "react-router-dom";
+import React from "react";
+import { NavLink, Link } from "react-router-dom"; // Ensure Link is imported for the logo and cart
 import { ShoppingCart, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 
-const Navbar = ({ cartCount }) => {
+const Navbar = ({ cartCount, onLoginClick }) => {
   const [animate, setAnimate] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navRef = useRef(null); // Ref to detect clicks outside the navbar
@@ -106,7 +107,12 @@ const Navbar = ({ cartCount }) => {
               </span>
             )}
           </Link>
-          <button className="hidden md:block text-white font-semibold px-5 py-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 cursor-pointer">
+
+          {/* Desktop Login Button - Now triggers the modal */}
+          <button
+            onClick={onLoginClick}
+            className="hidden md:block text-white font-semibold px-5 py-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 cursor-pointer"
+          >
             Log in
           </button>
         </div>
@@ -137,7 +143,14 @@ const Navbar = ({ cartCount }) => {
             </li>
           ))}
           <li className="w-full pt-3 mt-3 border-t border-emerald-200/50">
-            <button className="w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-300 ease-in-out shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 cursor-pointer">
+            {/* Mobile Login Button - Now triggers the modal and closes the menu */}
+            <button
+              onClick={() => {
+                onLoginClick();
+                setIsMenuOpen(false);
+              }}
+              className="w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-300 ease-in-out shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 cursor-pointer"
+            >
               Log in
             </button>
           </li>
