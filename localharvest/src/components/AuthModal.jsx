@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "../images/image.jpg";
 
-// --- SVG Icons for a polished look ---
+// --- SVG Icons (No changes here) ---
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 48 48">
     <path
@@ -25,12 +25,11 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// --- Animation Variants for Framer Motion ---
+// --- Animation Variants (Untouched) ---
 const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
 };
-
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.9, y: -100 },
   visible: {
@@ -61,7 +60,7 @@ function AuthModal({ isOpen, onClose }) {
       {isOpen && (
         <motion.div
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -69,56 +68,56 @@ function AuthModal({ isOpen, onClose }) {
         >
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-4xl flex bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 overflow-hidden"
+            className="relative w-full max-w-4xl flex bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-500/20 overflow-hidden"
             variants={modalVariants}
           >
             {/* Left side: Illustration */}
             <div className="hidden md:block w-1/2 relative">
               <img
                 src={Image}
-                alt="Fresh produce from local farms"
+                alt="LocalHarvest"
                 className="absolute inset-0 w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-700/80 to-green-500/80 flex flex-col justify-center items-center text-center p-8">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/80 to-indigo-800/80 flex flex-col justify-center items-center text-center p-8">
                 <h2 className="text-4xl font-extrabold text-white leading-tight">
                   <span className="block">LocalHarvest</span>
                   <span className="block mt-2">Goodness Delivered</span>
                 </h2>
-                <p className="text-emerald-100 text-lg mt-4 max-w-xs">
+                <p className="text-indigo-200 text-lg mt-4 max-w-xs">
                   Connecting you to fresh, sustainable, and local products.
                 </p>
               </div>
             </div>
 
-            {/* Right side: Form (No changes here) */}
+            {/* Right side: Form */}
             <div className="w-full md:w-1/2 p-8 md:p-12">
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 text-indigo-300 hover:text-cyan-300 transition-colors cursor-pointer"
               >
                 <X size={24} />
               </button>
 
               <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-800">
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
                   {isLogin ? "Welcome Back!" : "Create an Account"}
                 </h1>
               </div>
 
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 mb-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 mb-4 bg-slate-800/50 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-indigo-500/30"
               >
                 <GoogleIcon />
-                <span className="font-semibold text-gray-700">
+                <span className="font-semibold text-indigo-200">
                   Continue with Google
                 </span>
               </button>
 
               <div className="flex items-center my-6">
-                <hr className="flex-grow border-gray-300" />
-                <span className="mx-4 text-gray-500 text-sm">OR</span>
-                <hr className="flex-grow border-gray-300" />
+                <hr className="flex-grow border-indigo-800/50" />
+                <span className="mx-4 text-indigo-400 text-sm">OR</span>
+                <hr className="flex-grow border-indigo-800/50" />
               </div>
 
               <form className="space-y-5">
@@ -127,43 +126,43 @@ function AuthModal({ isOpen, onClose }) {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-indigo-300 mb-1">
                       Name
                     </label>
                     <input
                       type="text"
                       required
-                      className="w-full bg-white/80 border-2 border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition"
+                      className="w-full bg-slate-900/60 border-2 border-indigo-500/30 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition text-white placeholder-indigo-300/50 backdrop-blur-sm"
                       placeholder="Your Name"
                     />
                   </motion.div>
                 )}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-indigo-300 mb-1">
                     Email
                   </label>
                   <input
                     type="email"
                     required
-                    className="w-full bg-white/80 border-2 border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition"
+                    className="w-full bg-slate-900/60 border-2 border-indigo-500/30 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition text-white placeholder-indigo-300/50 backdrop-blur-sm"
                     placeholder="you@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-indigo-300 mb-1">
                     Password
                   </label>
                   <input
                     type="password"
                     required
-                    className="w-full bg-white/80 border-2 border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition"
+                    className="w-full bg-slate-900/60 border-2 border-indigo-500/30 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition text-white placeholder-indigo-300/50 backdrop-blur-sm"
                     placeholder="••••••••"
                   />
                 </div>
                 {isLogin && (
                   <button
                     type="button"
-                    className="text-sm text-emerald-600 hover:underline"
+                    className="text-sm text-cyan-400 hover:underline"
                   >
                     Forgot password?
                   </button>
@@ -171,21 +170,21 @@ function AuthModal({ isOpen, onClose }) {
 
                 <button
                   type="submit"
-                  className="w-full text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 cursor-pointer"
+                  className="w-full text-white font-semibold py-3 rounded-xl transition-all duration-300 ease-out transform hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/50 hover:shadow-xl hover:shadow-cyan-400/60 bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500 cursor-pointer"
                 >
                   {isLogin ? "Log In" : "Sign Up"}
                 </button>
               </form>
 
               <div className="text-center mt-6 text-sm">
-                <p className="text-gray-600">
+                <p className="text-gray-400">
                   {isLogin
                     ? "Don't have an account?"
                     : "Already have an account?"}
                   <button
                     type="button"
                     onClick={toggleForm}
-                    className="font-semibold text-emerald-600 hover:underline ml-1 cursor-pointer"
+                    className="font-semibold text-cyan-400 hover:underline ml-1 cursor-pointer"
                   >
                     {isLogin ? "Sign Up" : "Log In"}
                   </button>

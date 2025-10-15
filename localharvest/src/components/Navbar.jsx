@@ -1,14 +1,12 @@
-import React from "react";
-import { NavLink, Link } from "react-router-dom"; // Ensure Link is imported for the logo and cart
+import React, { useEffect, useState, useRef } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { ShoppingCart, ChevronDown } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
 
 const Navbar = ({ cartCount, onLoginClick }) => {
   const [animate, setAnimate] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navRef = useRef(null); // Ref to detect clicks outside the navbar
+  const navRef = useRef(null);
 
-  // Trigger animation for cart icon
   useEffect(() => {
     if (cartCount > 0) {
       setAnimate(true);
@@ -17,7 +15,6 @@ const Navbar = ({ cartCount, onLoginClick }) => {
     }
   }, [cartCount]);
 
-  // Close dropdown when clicking outside of the navbar
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (navRef.current && !navRef.current.contains(event.target)) {
@@ -41,34 +38,34 @@ const Navbar = ({ cartCount, onLoginClick }) => {
   return (
     <nav
       ref={navRef}
-      className="fixed w-full top-0 left-0 z-50 bg-white/80 backdrop-blur-lg shadow-lg transition-all duration-300"
+      className="fixed w-full top-0 left-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-indigo-500/20 shadow-2xl shadow-indigo-900/50 transition-all duration-300"
     >
       <div className="px-6 md:px-8 py-4 flex justify-between items-center">
-        {/* Logo - Acts as dropdown trigger on mobile */}
+        {/* Logo */}
         <div className="relative flex items-center">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden flex items-center gap-1 text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-500 cursor-pointer"
+            className="md:hidden flex items-center gap-1 text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 cursor-pointer"
             aria-expanded={isMenuOpen}
             aria-haspopup="true"
           >
             LocalHarvest
             <ChevronDown
               size={20}
-              className={`text-emerald-600 transition-transform duration-300 ${
+              className={`text-indigo-400 transition-transform duration-300 ${
                 isMenuOpen ? "rotate-180" : "rotate-0"
               }`}
             />
           </button>
           <Link
             to="/"
-            className="hidden md:block text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-500"
+            className="hidden md:block text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400"
           >
             LocalHarvest
           </Link>
         </div>
 
-        {/* Desktop Links with Animated Underline */}
+        {/* Desktop Links */}
         <ul className="hidden md:flex gap-8 text-lg">
           {navLinks.map((link) => (
             <li key={link.to}>
@@ -77,9 +74,9 @@ const Navbar = ({ cartCount, onLoginClick }) => {
                 className={({ isActive }) =>
                   `relative transition-colors duration-300 ${
                     isActive
-                      ? "text-emerald-600"
-                      : "text-gray-600 hover:text-emerald-600"
-                  } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:bg-emerald-500 after:transition-all after:duration-300 ${
+                      ? "text-cyan-300"
+                      : "text-indigo-300 hover:text-cyan-300"
+                  } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:bg-cyan-400 after:transition-all after:duration-300 ${
                     isActive ? "after:w-full" : "after:w-0 hover:after:w-full"
                   }`
                 }
@@ -95,11 +92,11 @@ const Navbar = ({ cartCount, onLoginClick }) => {
           <Link to="/orders" className="relative group">
             <ShoppingCart
               size={28}
-              className="text-gray-700 group-hover:text-emerald-600 transition-colors duration-300 cursor-pointer"
+              className="text-indigo-300 group-hover:text-cyan-300 transition-colors duration-300 cursor-pointer"
             />
             {cartCount > 0 && (
               <span
-                className={`absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transition-transform duration-300 ${
+                className={`absolute -top-2 -right-2 bg-cyan-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transition-transform duration-300 ${
                   animate ? "animate-ping-once" : ""
                 }`}
               >
@@ -108,19 +105,19 @@ const Navbar = ({ cartCount, onLoginClick }) => {
             )}
           </Link>
 
-          {/* Desktop Login Button - Now triggers the modal */}
+          {/* Login Button */}
           <button
             onClick={onLoginClick}
-            className="hidden md:block text-white font-semibold px-5 py-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 cursor-pointer"
+            className="hidden md:block text-white font-semibold px-5 py-2 rounded-xl transition-all duration-300 ease-out transform hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/50 hover:shadow-xl hover:shadow-cyan-400/60 bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500 cursor-pointer"
           >
             Log in
           </button>
         </div>
       </div>
 
-      {/* --- Mobile Dropdown Menu --- */}
+      {/* Mobile Dropdown Menu */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out bg-white/80 backdrop-blur-lg shadow-inner ${
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out bg-slate-900/95 backdrop-blur-xl shadow-inner ${
           isMenuOpen ? "max-h-96" : "max-h-0"
         }`}
       >
@@ -133,8 +130,8 @@ const Navbar = ({ cartCount, onLoginClick }) => {
                 className={({ isActive }) =>
                   `block w-full p-3 rounded-lg transition-colors text-lg ${
                     isActive
-                      ? "bg-emerald-50 text-emerald-600 font-semibold"
-                      : "text-gray-700 hover:bg-emerald-50"
+                      ? "bg-indigo-900/50 text-cyan-300 font-semibold"
+                      : "text-indigo-200 hover:bg-indigo-900/50"
                   }`
                 }
               >
@@ -142,14 +139,13 @@ const Navbar = ({ cartCount, onLoginClick }) => {
               </NavLink>
             </li>
           ))}
-          <li className="w-full pt-3 mt-3 border-t border-emerald-200/50">
-            {/* Mobile Login Button - Now triggers the modal and closes the menu */}
+          <li className="w-full pt-3 mt-3 border-t border-indigo-800/50">
             <button
               onClick={() => {
                 onLoginClick();
                 setIsMenuOpen(false);
               }}
-              className="w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-300 ease-in-out shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 cursor-pointer"
+              className="w-full text-white font-semibold px-5 py-3 rounded-xl transition-all duration-300 ease-out shadow-lg bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500 cursor-pointer"
             >
               Log in
             </button>
