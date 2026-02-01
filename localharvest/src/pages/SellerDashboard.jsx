@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useContext } from "react";
+import { ProductContext } from "../context/ProductContext";
 
 // --- SVG Icons ---
 const TrashIcon = () => (
@@ -66,30 +68,59 @@ const HashIcon = () => (
   </svg>
 );
 
-function SellerDashboard({ products, onAddProduct, onRemoveProduct }) {
+function SellerDashboard({
+  products,
+  onAddProduct,
+  onRemoveProduct,
+}) {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
     stock: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [removingId, setRemovingId] = useState(null);
 
-  const handleRemoveProduct = (id) => {
-    setRemovingId(id);
-    setTimeout(() => {
-      onRemoveProduct(id);
-      setRemovingId(null);
-    }, 1400);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!newProduct.name || !newProduct.price || !newProduct.stock) {
+      // Basic client-side validation, parent component handles actual alerts/toasts
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Call parent handler directly with the payload
+      await onAddProduct({
+        name: newProduct.name,
+        price: parseFloat(newProduct.price),
+        stock: parseInt(newProduct.stock, 10),
+      });
+
+      // Clear form only on success (assumed if no error thrown)
+      setNewProduct({ name: "", price: "", stock: "" });
+    } catch (error) {
+      console.error("Error submitting product:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleAddClick = () => {
-    if (!newProduct.name || !newProduct.price || !newProduct.stock) return;
-    onAddProduct({
-      name: newProduct.name,
-      price: parseFloat(newProduct.price),
-      stock: parseInt(newProduct.stock),
-    });
-    setNewProduct({ name: "", price: "", stock: "" });
+
+  const handleRemoveProduct = async (id) => {
+    setRemovingId(id);
+    // Wait for animation to finish before calling API
+    setTimeout(async () => {
+        try {
+            await onRemoveProduct(id);
+        } catch (error) {
+            console.error("Error removing", error);
+        } finally {
+            setRemovingId(null);
+        }
+    }, 800);
   };
 
   const getStockColor = (stock) => {
@@ -100,39 +131,42 @@ function SellerDashboard({ products, onAddProduct, onRemoveProduct }) {
 
   return (
     <div className="min-h-screen relative overflow-hidden font-sans bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-950">
-      {/* Animated background elements */}
+      {/* Refined Background matching Home.jsx */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full mix-blend-screen filter blur-3xl animate-pulse-slow"></div>
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-indigo-500/30 rounded-full mix-blend-screen filter blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-cyan-500/20 rounded-full mix-blend-screen filter blur-3xl animate-float-delayed"></div>
-
+        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-cyan-500/20 rounded-full mix-blend-screen filter blur-3xl animate-float"></div>
+        <div className="absolute -top-20 right-1/4 w-80 h-80 bg-violet-500/25 rounded-full mix-blend-screen filter blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-3xl animate-float-delayed"></div>
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
       </div>
 
       <div className="relative z-10">
-        {/* Hero Section */}
-        <section className="text-center py-20 px-4">
-          <div className="inline-block mb-4 px-4 py-2 bg-indigo-500/20 backdrop-blur-sm border border-indigo-400/30 rounded-full">
-            <span className="text-indigo-300 text-sm font-medium">
-              ✨ Premium Dashboard
+        {/* Header Section */}
+        <section className="text-center py-24 px-4">
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-indigo-500/10 backdrop-blur-md border border-indigo-400/20 rounded-full shadow-lg shadow-indigo-500/10">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            <span className="text-indigo-200 text-xs font-semibold tracking-wide uppercase">
+              Admin & Seller Portal
             </span>
           </div>
-          <h1 className="text-7xl font-black tracking-tight mb-6">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 drop-shadow-2xl">
-              Seller Dashboard
-            </span>
+          <h1 className="text-6xl md:text-7xl font-bold tracking-tight mb-6 text-white leading-tight">
+            Manage <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400">Inventory</span>
           </h1>
-          <p className="text-gray-300 text-xl mt-4 max-w-2xl mx-auto font-light">
-            Manage your products with style. Track inventory in real-time.
+          <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed">
+            Seamlessly add, track, and manage your products with our professional dashboard interface.
           </p>
         </section>
 
-        {/* Add Product Card */}
-        <div className="max-w-5xl mx-auto px-6 mb-16">
-          <div className="bg-gradient-to-br from-indigo-900/40 to-violet-900/40 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-8 shadow-2xl shadow-indigo-900/50 hover:shadow-indigo-600/50 transition-all duration-500">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-indigo-500 rounded-xl flex items-center justify-center">
+        {/* Add Product Form */}
+        <div className="max-w-4xl mx-auto px-6 mb-24">
+          <div className="bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-8 md:p-10 shadow-2xl shadow-indigo-500/10 relative overflow-hidden">
+            {/* Glow effect */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 text-white"
@@ -144,16 +178,22 @@ function SellerDashboard({ products, onAddProduct, onRemoveProduct }) {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">Add New Product</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Add New Product</h2>
+                <p className="text-slate-400 text-sm">Enter product details below</p>
+              </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-              <div className="relative w-full group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 group-focus-within:scale-110">
+            <form
+              onSubmit={handleSubmit}
+              className="grid md:grid-cols-4 gap-6"
+            >
+              <div className="relative group md:col-span-4 lg:col-span-2">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-300">
                   <PackageIcon />
                 </span>
                 <input
@@ -163,27 +203,29 @@ function SellerDashboard({ products, onAddProduct, onRemoveProduct }) {
                   onChange={(e) =>
                     setNewProduct({ ...newProduct, name: e.target.value })
                   }
-                  className="pl-12 pr-4 py-4 bg-slate-900/60 border-2 border-indigo-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 w-full text-white placeholder-indigo-300/50 backdrop-blur-sm hover:border-indigo-400/50"
+                  disabled={isSubmitting}
+                  className="w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300 hover:bg-slate-950/80"
                 />
               </div>
 
-              <div className="relative w-full md:w-1/3 group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 group-focus-within:scale-110">
+              <div className="relative group md:col-span-2 lg:col-span-1">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-300">
                   <DollarSignIcon />
                 </span>
                 <input
                   type="number"
-                  placeholder="Price (₹)"
+                  placeholder="Price"
                   value={newProduct.price}
                   onChange={(e) =>
                     setNewProduct({ ...newProduct, price: e.target.value })
                   }
-                  className="pl-12 pr-4 py-4 bg-slate-900/60 border-2 border-indigo-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 w-full text-white placeholder-indigo-300/50 backdrop-blur-sm hover:border-indigo-400/50"
+                  disabled={isSubmitting}
+                  className="w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300 hover:bg-slate-950/80"
                 />
               </div>
 
-              <div className="relative w-full md:w-1/3 group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 group-focus-within:scale-110">
+              <div className="relative group md:col-span-2 lg:col-span-1">
+                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors duration-300">
                   <HashIcon />
                 </span>
                 <input
@@ -193,264 +235,98 @@ function SellerDashboard({ products, onAddProduct, onRemoveProduct }) {
                   onChange={(e) =>
                     setNewProduct({ ...newProduct, stock: e.target.value })
                   }
-                  className="pl-12 pr-4 py-4 bg-slate-900/60 border-2 border-indigo-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 w-full text-white placeholder-indigo-300/50 backdrop-blur-sm hover:border-indigo-400/50"
+                  disabled={isSubmitting}
+                  className="w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300 hover:bg-slate-950/80"
                 />
               </div>
-
-              <button
-                onClick={handleAddClick}
-                className="w-full md:w-auto text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 ease-out transform hover:scale-105 active:scale-95 shadow-xl shadow-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-400/60 bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500 cursor-pointer relative overflow-hidden group tracking-wide"
-                style={{
-                  fontFamily: "'Space Grotesk', 'Rajdhani', sans-serif",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  Add Product
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-            </div>
+              
+               <div className="md:col-span-4 mt-2">
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/20 transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                >
+                    {isSubmitting ? (
+                        <span className="animate-pulse">Processing...</span>
+                    ) : (
+                        <>
+                            Add to Inventory
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </>
+                    )}
+                </button>
+               </div>
+            </form>
           </div>
         </div>
 
-        {/* Inventory Grid */}
-        <div className="max-w-7xl mx-auto px-6 pb-20">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="h-1 flex-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent rounded-full"></div>
-            <h2 className="text-4xl font-black text-white tracking-tight">
-              Your Inventory
-            </h2>
-            <div className="h-1 flex-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent rounded-full"></div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Inventory List */}
+        <div className="max-w-7xl mx-auto px-6 pb-24">
+            <div className="flex items-center justify-between mb-8 px-2">
+                <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                    Current Stock
+                    <span className="px-3 py-1 bg-slate-800 text-slate-300 text-sm font-medium rounded-full border border-slate-700">
+                        {products.length} Items
+                    </span>
+                </h2>
+                {/* Optional: Add search/filter here later */}
+            </div>
+            
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product, index) => (
               <div
                 key={product.id}
-                className={`group bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl rounded-3xl shadow-xl border border-indigo-500/20 p-7 flex flex-col hover:shadow-2xl hover:shadow-indigo-500/40 hover:-translate-y-3 hover:border-indigo-400/50 transition-all duration-500 animate-fadeInUp relative ${
-                  removingId === product.id
-                    ? "overflow-visible"
-                    : "overflow-hidden"
-                }`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                style={{ animationDelay: `${index * 50}ms` }}
+                className={`
+                    group relative bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 
+                    hover:bg-slate-800/60 hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/10 
+                    transition-all duration-500 flex flex-col
+                     ${removingId === product.id ? "animate-shatter pointer-events-none" : "animate-fadeInUp opacity-100 scale-100"}
+                `}
               >
-                {/* Hover glow effect */}
-                {removingId !== product.id && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-violet-500/0 group-hover:from-cyan-500/10 group-hover:to-violet-500/10 rounded-3xl transition-all duration-500"></div>
-                )}
+                <div className="flex justify-between items-start mb-4">
+                     <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-indigo-500/20 group-hover:text-indigo-400 transition-colors duration-300">
+                        📦
+                     </div>
+                     <button
+                        onClick={() => handleRemoveProduct(product.id)}
+                        className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                        title="Remove Product"
+                     >
+                        <TrashIcon />
+                     </button>
+                </div>
+                
+                <h3 className="text-xl font-bold text-slate-100 mb-1 group-hover:text-indigo-300 transition-colors">
+                    {product.name}
+                </h3>
+                <div className="flex items-baseline gap-1 mb-4">
+                    <span className="text-sm text-slate-400">₹</span>
+                    <span className="text-2xl font-bold text-white">{product.price}</span>
+                </div>
 
-                {/* Shatter pieces - now full card replicas */}
-                {removingId === product.id && (
-                  <>
-                    <div className="shard shard-1 absolute inset-0 bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-7 shadow-xl">
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-1">
-                              {product.name}
-                            </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-6">
-                          <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                            ₹{product.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg inline-block ${getStockColor(
-                            product.stock
-                          )}`}
-                        >
-                          {product.stock} units
-                        </span>
-                      </div>
-                    </div>
-                    <div className="shard shard-2 absolute inset-0 bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-7 shadow-xl">
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-1">
-                              {product.name}
-                            </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-6">
-                          <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                            ₹{product.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg inline-block ${getStockColor(
-                            product.stock
-                          )}`}
-                        >
-                          {product.stock} units
-                        </span>
-                      </div>
-                    </div>
-                    <div className="shard shard-3 absolute inset-0 bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-7 shadow-xl">
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-1">
-                              {product.name}
-                            </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-6">
-                          <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                            ₹{product.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg inline-block ${getStockColor(
-                            product.stock
-                          )}`}
-                        >
-                          {product.stock} units
-                        </span>
-                      </div>
-                    </div>
-                    <div className="shard shard-4 absolute inset-0 bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-7 shadow-xl">
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-1">
-                              {product.name}
-                            </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-6">
-                          <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                            ₹{product.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg inline-block ${getStockColor(
-                            product.stock
-                          )}`}
-                        >
-                          {product.stock} units
-                        </span>
-                      </div>
-                    </div>
-                    <div className="shard shard-5 absolute inset-0 bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-7 shadow-xl">
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-1">
-                              {product.name}
-                            </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-6">
-                          <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                            ₹{product.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg inline-block ${getStockColor(
-                            product.stock
-                          )}`}
-                        >
-                          {product.stock} units
-                        </span>
-                      </div>
-                    </div>
-                    <div className="shard shard-6 absolute inset-0 bg-gradient-to-br from-slate-800/50 to-indigo-900/30 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-7 shadow-xl">
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-white mb-1">
-                              {product.name}
-                            </h3>
-                            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-6">
-                          <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                            ₹{product.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg inline-block ${getStockColor(
-                            product.stock
-                          )}`}
-                        >
-                          {product.stock} units
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <div
-                  className={`relative z-10 ${
-                    removingId === product.id ? "invisible" : ""
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-cyan-300 transition-colors duration-300">
-                        {product.name}
-                      </h3>
-                      <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-violet-400 rounded-full group-hover:w-24 transition-all duration-300"></div>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveProduct(product.id)}
-                      className="bg-slate-700/50 text-gray-400 p-3 rounded-xl hover:bg-rose-500 hover:text-white hover:scale-110 hover:rotate-12 transition-all duration-300 cursor-pointer backdrop-blur-sm border border-slate-600/50 hover:border-rose-400"
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-
-                  <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
-                      ₹{product.price.toFixed(2)}
+                <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                    <span className={`text-xs font-bold px-3 py-1.5 rounded-lg ${getStockColor(product.stock)}`}>
+                        {product.stock} in stock
                     </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-sm font-bold px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg ${getStockColor(
-                        product.stock
-                      )}`}
-                    >
-                      {product.stock} units
-                    </span>
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 rounded-xl flex items-center justify-center border border-indigo-400/30 group-hover:scale-110 transition-transform duration-300">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-indigo-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                        />
-                      </svg>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
+            
+            {products.length === 0 && (
+                <div className="col-span-full py-20 text-center text-slate-500 bg-slate-900/20 rounded-3xl border border-dashed border-slate-800">
+                    <p>No products in inventory yet.</p>
+                </div>
+            )}
           </div>
         </div>
       </div>
 
-      <style>{`
+       <style>{`
         @keyframes fadeInUp { 
-          from { opacity: 0; transform: translateY(40px); } 
+          from { opacity: 0; transform: translateY(20px); } 
           to { opacity: 1; transform: translateY(0); } 
         }
         @keyframes float { 
@@ -466,64 +342,27 @@ function SellerDashboard({ products, onAddProduct, onRemoveProduct }) {
           50% { opacity: 0.5; transform: scale(1.1); }
         }
         @keyframes shatter {
-          0% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-        @keyframes shard1 {
-          0% { clip-path: polygon(0 0, 60% 0, 40% 50%, 0 40%); transform: translate(0, 0) rotate(0deg); opacity: 1; }
-          50% { clip-path: polygon(0 0, 60% 0, 40% 50%, 0 40%); transform: translate(-150px, -80px) rotate(-180deg); opacity: 1; }
-          100% { clip-path: polygon(0 0, 60% 0, 40% 50%, 0 40%); transform: translate(-170px, 600px) rotate(-360deg); opacity: 0; }
-        }
-        @keyframes shard2 {
-          0% { clip-path: polygon(60% 0, 100% 0, 100% 45%, 50% 40%); transform: translate(0, 0) rotate(0deg); opacity: 1; }
-          50% { clip-path: polygon(60% 0, 100% 0, 100% 45%, 50% 40%); transform: translate(180px, -100px) rotate(200deg); opacity: 1; }
-          100% { clip-path: polygon(60% 0, 100% 0, 100% 45%, 50% 40%); transform: translate(200px, 600px) rotate(400deg); opacity: 0; }
-        }
-        @keyframes shard3 {
-          0% { clip-path: polygon(0 40%, 40% 50%, 45% 100%, 0 100%); transform: translate(0, 0) rotate(0deg); opacity: 1; }
-          50% { clip-path: polygon(0 40%, 40% 50%, 45% 100%, 0 100%); transform: translate(-120px, 50px) rotate(-140deg); opacity: 1; }
-          100% { clip-path: polygon(0 40%, 40% 50%, 45% 100%, 0 100%); transform: translate(-140px, 600px) rotate(-280deg); opacity: 0; }
-        }
-        @keyframes shard4 {
-          0% { clip-path: polygon(40% 50%, 60% 45%, 55% 100%, 45% 100%); transform: translate(0, 0) rotate(0deg); opacity: 1; }
-          50% { clip-path: polygon(40% 50%, 60% 45%, 55% 100%, 45% 100%); transform: translate(30px, -60px) rotate(160deg); opacity: 1; }
-          100% { clip-path: polygon(40% 50%, 60% 45%, 55% 100%, 45% 100%); transform: translate(40px, 600px) rotate(320deg); opacity: 0; }
-        }
-        @keyframes shard5 {
-          0% { clip-path: polygon(50% 40%, 100% 45%, 100% 100%, 55% 100%); transform: translate(0, 0) rotate(0deg); opacity: 1; }
-          50% { clip-path: polygon(50% 40%, 100% 45%, 100% 100%, 55% 100%); transform: translate(160px, 70px) rotate(220deg); opacity: 1; }
-          100% { clip-path: polygon(50% 40%, 100% 45%, 100% 100%, 55% 100%); transform: translate(180px, 600px) rotate(440deg); opacity: 0; }
-        }
-        @keyframes shard6 {
-          0% { clip-path: polygon(40% 50%, 60% 45%, 50% 40%); transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-          50% { clip-path: polygon(40% 50%, 60% 45%, 50% 40%); transform: translate(-50px, -120px) rotate(-240deg) scale(0.8); opacity: 1; }
-          100% { clip-path: polygon(40% 50%, 60% 45%, 50% 40%); transform: translate(-60px, 600px) rotate(-480deg) scale(0.4); opacity: 0; }
+            0% { transform: scale(1); opacity: 1; }
+            20% { transform: scale(1.1) rotate(2deg); opacity: 1; filter: brightness(1.2); }
+            50% { transform: scale(1.2) rotate(-2deg); opacity: 0.8; }
+            100% { transform: scale(0) rotate(10deg); opacity: 0; filter: blur(10px); }
         }
         .animate-fadeInUp { 
-          animation: fadeInUp 0.6s ease-out forwards; 
+          animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
           animation-fill-mode: backwards; 
         }
         .animate-float { 
-          animation: float 8s ease-in-out infinite; 
+          animation: float 10s ease-in-out infinite; 
         }
         .animate-float-delayed { 
-          animation: float-delayed 10s ease-in-out infinite; 
+          animation: float-delayed 12s ease-in-out infinite; 
         }
         .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
+          animation: pulse-slow 8s ease-in-out infinite;
         }
         .animate-shatter {
-          pointer-events: none;
+            animation: shatter 0.5s ease-in forwards;
         }
-        .shard {
-          pointer-events: none;
-        }
-        .shard-1 { animation: shard1 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        .shard-2 { animation: shard2 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        .shard-3 { animation: shard3 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        .shard-4 { animation: shard4 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        .shard-5 { animation: shard5 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        .shard-6 { animation: shard6 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         .bg-grid-pattern {
           background-image: 
             linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),

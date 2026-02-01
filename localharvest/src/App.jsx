@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useToast } from "./context/ToastContext";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -12,31 +13,66 @@ import AuthModal from "./components/AuthModal";
 function App() {
   const [cartItems, setCartItems] = useState([]);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [products, setProducts] = useState([]);
 
-  const [products, setProducts] = useState([
-    { id: 1, name: "Fresh Strawberries", price: 5, stock: 20 },
-    { id: 2, name: "Organic Honey", price: 10, stock: 12 },
-    { id: 3, name: "Farm Eggs", price: 4, stock: 5 },
-  ]);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-  // ✅ 1. Define the handler functions here
-  const handleAddProduct = (newProduct) => {
-    setProducts((prevProducts) => [
-      ...prevProducts,
-      {
-        id:
-          prevProducts.length > 0
-            ? Math.max(...prevProducts.map((p) => p.id)) + 1
-            : 1,
-        ...newProduct,
-      },
-    ]);
+  // Fetch all products from backend
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("http://localhost:3001/api/products");
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    }
   };
 
-  const handleRemoveProduct = (productId) => {
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product.id !== productId)
-    );
+  // ✅ FIXED: Add product using backend response (no dummy products)
+  // ✅ FIXED: Add product using backend response (no dummy + no alert)
+  const { addToast } = useToast();
+
+  const handleAddProduct = async (newProduct) => {
+    try {
+      const response = await fetch("http://localhost:3001/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add product");
+      }
+
+      const updatedList = await response.json();
+      setProducts(updatedList);
+      addToast("Product added successfully", "success");
+    } catch (error) {
+      console.error("Error adding product:", error);
+      addToast("Failed to add product", "error");
+    }
+  };
+
+  const handleRemoveProduct = async (productId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/products/${productId}`,
+        { method: "DELETE" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      const updatedList = await response.json();
+      setProducts(updatedList);
+      addToast("Product removed successfully", "success");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      addToast("Failed to delete product", "error");
+    }
   };
 
   const handleAddToCart = (item) => {
@@ -56,10 +92,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route
             path="/shop"
-            element={<Shop products={products} addToCart={handleAddToCart} />}
+            element={<Shop products={products} addToCart={handleAddToCart} refreshProducts={fetchProducts} />}
           />
-
-          {/* ✅ 2. Pass the new handler functions as props */}
           <Route
             path="/sellers"
             element={
@@ -70,10 +104,9 @@ function App() {
               />
             }
           />
-
           <Route
             path="/orders"
-            element={<Orders orders={cartItems} setCartItems={setCartItems} />}
+            element={<Orders orders={cartItems} setCartItems={setCartItems} refreshProducts={fetchProducts} />}
           />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
